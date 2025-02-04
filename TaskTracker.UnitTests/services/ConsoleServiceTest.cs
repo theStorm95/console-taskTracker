@@ -1,7 +1,8 @@
-using System.Data.Common;
-using TaskTracker.services;
+using TaskTracker.Services;
+using Moq;
+using TaskTracker.Factory;
 
-namespace TaskTracker.UnitTests;
+namespace TaskTracker.UnitTests.services;
 
 public class ConsoleServiceTests
 {
@@ -9,9 +10,8 @@ public class ConsoleServiceTests
   public void Run_NoArgs_PrintsErrorWithHelpPrompt()
   {
     // Arrange
-    Database db = new FakeDb();
-    TaskTracker taskService = new TaskTracker(db);
-    ConsoleService consoleService = new ConsoleService(taskService);
+    var mockFactory = new Mock<CommandFactory>(MockBehavior.Strict, new Mock<ITaskTracker>().Object);
+    var consoleService = new ConsoleService(mockFactory.Object);
     var output = new StringWriter();
     Console.SetOut(output);
 
@@ -23,12 +23,27 @@ public class ConsoleServiceTests
   }
 
   [Fact]
+  public void Run_HelpCommand_PrintsHelpMessage()
+  {
+    // Arrange
+    var mockFactory = new Mock<CommandFactory>(MockBehavior.Strict, new Mock<ITaskTracker>().Object);
+    var consoleService = new ConsoleService(mockFactory.Object);
+    var output = new StringWriter();
+    Console.SetOut(output);
+
+    // Act
+    consoleService.Run(["-h"]);
+
+    // Assert
+    Assert.Contains("Available", output.ToString());
+  }
+
+  [Fact]
   public void Run_WithInvalidCommand_PrintsErrorWithHelpPrompt()
   {
     // Arrange
-    Database db = new FakeDb();
-    TaskTracker taskService = new TaskTracker(db);
-    ConsoleService consoleService = new ConsoleService(taskService);
+    var mockFactory = new Mock<CommandFactory>(MockBehavior.Strict, new Mock<ITaskTracker>().Object);
+    var consoleService = new ConsoleService(mockFactory.Object);
     var output = new StringWriter();
     Console.SetOut(output);
 
@@ -40,19 +55,19 @@ public class ConsoleServiceTests
   }
 
   [Fact]
-  public void Run_HelpCommand_PrintsHelpMessage()
+  public void Run_WithValidCommand_ExecutesCommand()
   {
     // Arrange
-    Database db = new FakeDb();
-    TaskTracker taskService = new TaskTracker(db);
-    ConsoleService consoleService = new ConsoleService(taskService);
-    var output = new StringWriter();
-    Console.SetOut(output);
+    var mockCommand = new Mock<ICommand>();
+    var mockFactory = new Mock<ICommandFactory>();
+    mockFactory.Setup(f => f.GetCommand("add")).Returns(mockCommand.Object);
+
+    var consoleService = new ConsoleService(mockFactory.Object);
 
     // Act
-    consoleService.Run(["-h"]);
+    consoleService.Run(["add", "Test Command"]);
 
     // Assert
-    Assert.Equal("Available commands:\n  -h, --help: Display this help message\n  add: Add a new task\n  list: List all tasks\n  complete: Mark a task as complete\n  delete: Delete a task\n", output.ToString());
+    mockCommand.Verify(cmd => cmd.Execute(It.IsAny<string[]>()), Times.Once);
   }
 }

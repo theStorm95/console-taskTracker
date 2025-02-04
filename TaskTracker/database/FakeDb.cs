@@ -1,25 +1,29 @@
-public interface Database
+using TaskTracker.Models;
+
+namespace TaskTracker.Database;
+
+public interface IDatabase
 {
-  void AddTask(Task task);
-  void RemoveTask(Task task);
-  void UpdateTask(Task task);
+  void AddTask(ToDoTask task);
+  // void RemoveTask(string taskId);
+  // void UpdateTask(ToDoTask task);
   // List<TaskTracker.Task> getTasks();
 }
 
-public class FakeDb : Database
+public class FakeDb : IDatabase
 {
-  public void AddTask(Task task)
+  public void AddTask(ToDoTask task)
   {
     Console.WriteLine("Task added");
   }
 
-  public void RemoveTask(Task task)
-  {
-    Console.WriteLine("Task removed");
-  }
+  // public void RemoveTask(string taskId)
+  // {
+  //   Console.WriteLine("Task removed");
+  // }
 
-  public void UpdateTask(Task task)
-  {
-    Console.WriteLine("Task updated");
-  }
+  // public void UpdateTask(Task task)
+  // {
+  //   Console.WriteLine("Task updated");
+  // }
 }

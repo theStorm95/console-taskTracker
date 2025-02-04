@@ -1,4 +1,6 @@
-﻿using TaskTracker.services;
+﻿using TaskTracker.Services;
+using TaskTracker.Database;
+using TaskTracker.Factory;
 
 namespace TaskTracker;
 
@@ -6,10 +8,12 @@ class Program
 {
     static void Main(string[] args)
     {
-        Database db = new FakeDb();
-        TaskTracker taskService = new TaskTracker(db);
+        IDatabase db = new FakeDb();
+        var taskService = new TaskTrackerService(db);
 
-        ConsoleService consoleService = new ConsoleService(taskService);
+        var commandFactory = new CommandFactory(taskService);
+        var consoleService = new ConsoleService(commandFactory);
+
         consoleService.Run(args);
     }
 }

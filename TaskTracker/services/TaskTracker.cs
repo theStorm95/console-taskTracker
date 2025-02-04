@@ -1,19 +1,27 @@
-using System.Data.Common;
+using TaskTracker.Database;
+using TaskTracker.Models;
 
-namespace TaskTracker
+namespace TaskTracker.Services
 {
-  public class TaskTracker
+  public interface ITaskTracker
   {
-    private readonly Database _db;
+    void AddTask(string taskDescription);
+  }
 
-    public TaskTracker(Database db)
-    {
-      _db = db;
-    }
+  public class TaskTrackerService(IDatabase db) : ITaskTracker
+  {
+    private int _taskId = 1;
 
-    public string AddTask(Task task)
+    public void AddTask(string taskDescription)
     {
-      return "Task added " + task.description;
+      var task = new ToDoTask
+      {
+        id = _taskId++,
+        description = taskDescription
+      };
+
+      db.AddTask(task);
+      Console.WriteLine($"Task added successfully (ID: {task.id})");
     }
   }
 }
